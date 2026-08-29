@@ -36,7 +36,6 @@
             text-align: center;
         }
 
-        /* Login Box */
         .login-card {
             max-width: 350px;
             margin: 50px auto;
@@ -58,7 +57,7 @@
             font-weight: bold;
         }
 
-        input[type="text"], input[type="password"], textarea, select {
+        input[type="text"], input[type="password"], textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -88,7 +87,6 @@
             margin-top: 25px;
         }
 
-        /* Slots Management Grid */
         .days-select {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -128,12 +126,17 @@
             color: white;
         }
 
-        .slot-btn.available {
-            background-color: var(--success-color);
+        .slot-btn.active-slot {
+            background-color: var(--success-color); /* روی سایت هست */
         }
 
-        .slot-btn.booked {
-            background-color: var(--danger-color);
+        .slot-btn.hidden-slot {
+            background-color: #6c757d; /* از روی سایت برداشته شده / غیرفعال */
+            text-decoration: line-through;
+        }
+
+        .slot-btn.booked-slot {
+            background-color: var(--danger-color); /* رزرو شده (آنلاین یا تلفنی) */
         }
 
         .booking-item {
@@ -163,7 +166,6 @@
 </head>
 <body>
 
-<!-- Login Section -->
 <div id="loginSection" class="login-card">
     <h2>ورود به پنل ادمین</h2>
     <p style="font-size: 0.85rem; color: #666;">پیرایش باربرفان</p>
@@ -178,38 +180,37 @@
     <button onclick="handleLogin()">ورود</button>
 </div>
 
-<!-- Admin Dashboard Section -->
 <div id="dashboardSection" class="container" style="display: none;">
     <div class="header-admin">
         <button class="logout-btn" onclick="handleLogout()">خروج</button>
         <h2 style="margin: 0; text-align: right;">پنل مدیریت پیرایش باربرفان</h2>
     </div>
 
-    <!-- Announcement Section -->
     <div class="section">
         <h3>۱. تنظیم اطلاعیه روی سایت</h3>
         <textarea id="announcementText" rows="2" placeholder="متن اطلاعیه جدید..."></textarea>
         <button onclick="saveAnnouncement()" style="background-color: var(--accent-color);">ذخیره اطلاعیه</button>
     </div>
 
-    <!-- Manual Slots Management Section -->
     <div class="section">
-        <h3>۲. مدیریت نوبت‌ها (رزرو تلفنی / تکمیل ظرفیت)</h3>
+        <h3>۲. مدیریت و تعیین ساعت‌های نوبت‌دهی (حذف/نمایش یا رزرو تلفنی)</h3>
         <p style="font-size: 0.85rem; color: #666;">
-            روز مورد نظر را انتخاب کنید و روی هر ساعتی که می‌خواهید <b>ببندید (تلفنی پر شده)</b> یا <b>باز کنید</b> کلیک کنید:
+            روز مورد نظر را انتخاب کنید. روی هر ساعت کلیک کنید تا وضعیت آن تغییر کند:<br>
+            <span style="color:var(--success-color); font-weight:bold;">■ سبز:</span> فعال روی سایت | 
+            <span style="color:#6c757d; font-weight:bold;">■ خاکستری:</span> مخفی شده (نشان داده نمی‌شود) | 
+            <span style="color:var(--danger-color); font-weight:bold;">■ قرمز:</span> تکمیل ظرفیت / رزرو شده
         </p>
         
         <div class="days-select" id="adminDaysGrid"></div>
         <div class="slots-grid" id="adminSlotsGrid"></div>
     </div>
 
-    <!-- Online Bookings List Section -->
     <div class="section">
-        <h3>۳. لیست آخرین نوبت‌های ثبت‌شده آنلاین</h3>
+        <h3>۳. لیست نوبت‌های ثبت‌شده آنلاین</h3>
         <div id="adminBookingsList">
             <p style="text-align:center; color:#888;">هنوز رزروی ثبت نشده است.</p>
         </div>
-        <button onclick="clearAllBookings()" style="background-color: var(--danger-color); margin-top:15px;">پاک کردن کل لیست نوبت‌ها</button>
+        <button onclick="clearAllBookings()" style="background-color: var(--danger-color); margin-top:15px;">پاک کردن اطلاعات رزروها</button>
     </div>
 
     <p style="text-align: center; margin-top: 25px;">
@@ -218,14 +219,25 @@
 </div>
 
 <script>
-    // Default Credentials
     const ADMIN_USER = "admin";
     const ADMIN_PASS = "123456";
 
     let selectedAdminDay = null;
+    let customSlotsConfig = JSON.parse(localStorage.getItem('barbarfan_custom_slots') || '{}');
     let bookedTimes = JSON.parse(localStorage.getItem('barbarfan_booked_slots') || '{}');
 
-    // Dynamic 4 Days
+    // Default master slots from 10:00 to 23:00 every 30 minutes
+    function generateMasterTimes() {
+        let times = [];
+        for(let hour = 10; hour <= 22; hour++) {
+            times.push((hour < 10 ? '0' : '') + hour + ':00');
+            times.push((hour < 10 ? '0' : '') + hour + ':30');
+        }
+        times.push('23:00'); // final slot
+        return times;
+    }
+    const masterTimes = generateMasterTimes();
+
     function generateDays() {
         let daysArray = [];
         let today = new Date();
@@ -244,11 +256,9 @@
 
     const days = generateDays();
 
-    // Authentication
     function handleLogin() {
         const user = document.getElementById('usernameInput').value;
         const pass = document.getElementById('passwordInput').value;
-
         if(user === ADMIN_USER && pass === ADMIN_PASS) {
             sessionStorage.setItem('barbarfan_admin_logged_in', 'true');
             showDashboard();
@@ -275,7 +285,6 @@
         loadBookingsList();
     }
 
-    // Announcement Logic
     function saveAnnouncement() {
         const text = document.getElementById('announcementText').value;
         if(!text) return alert('لطفاً متنی وارد کنید.');
@@ -283,7 +292,6 @@
         alert('اطلاعیه با موفقیت در سایت آپدیت شد!');
     }
 
-    // Slots Management
     function initAdminCalendar() {
         const daysGrid = document.getElementById('adminDaysGrid');
         daysGrid.innerHTML = '';
@@ -309,43 +317,61 @@
     function renderAdminSlots(dateKey) {
         const slotsGrid = document.getElementById('adminSlotsGrid');
         slotsGrid.innerHTML = '';
-        const defaultTimes = ['10:00', '10:30', '11:00', '12:00', '14:00', '14:30', '15:00', '16:00'];
-        const currentBooked = bookedTimes[dateKey] || [];
+        
+        // Get hidden slots and booked slots for this day
+        let hiddenList = customSlotsConfig[dateKey] || []; // default empty (all visible)
+        let currentBooked = bookedTimes[dateKey] || [];
 
-        defaultTimes.forEach(time => {
+        masterTimes.forEach(time => {
             const btn = document.createElement('button');
             btn.classList.add('slot-btn');
             
             if(currentBooked.includes(time)) {
-                btn.classList.add('booked');
-                btn.innerText = `${time} (تکمیل/پر)`;
+                btn.classList.add('booked-slot');
+                btn.innerText = `${time} (رزرو/پر)`;
+            } else if(hiddenList.includes(time)) {
+                btn.classList.add('hidden-slot');
+                btn.innerText = `${time} (مخفی)`;
             } else {
-                btn.classList.add('available');
-                btn.innerText = `${time} (آزاد)`;
+                btn.classList.add('active-slot');
+                btn.innerText = `${time} (فعال)`;
             }
 
-            btn.onclick = () => toggleSlotStatus(dateKey, time);
+            btn.onclick = () => cycleSlotStatus(dateKey, time);
             slotsGrid.appendChild(btn);
         });
     }
 
-    function toggleSlotStatus(dateKey, time) {
+    // Cycle through states: Active -> Hidden -> Booked -> Active
+    function cycleSlotStatus(dateKey, time) {
+        if(!customSlotsConfig[dateKey]) customSlotsConfig[dateKey] = [];
         if(!bookedTimes[dateKey]) bookedTimes[dateKey] = [];
 
-        const index = bookedTimes[dateKey].indexOf(time);
-        if(index > -1) {
-            // Unblock slot
-            bookedTimes[dateKey].splice(index, 1);
+        let hiddenList = customSlotsConfig[dateKey];
+        let bookedList = bookedTimes[dateKey];
+
+        let isBooked = bookedList.includes(time);
+        let isHidden = hiddenList.includes(time);
+
+        if(!isHidden && !isBooked) {
+            // Currently Active -> Make it Hidden (remove from site)
+            hiddenList.push(time);
+        } else if(isHidden && !isBooked) {
+            // Currently Hidden -> Make it Booked/Phone reserved (red)
+            const index = hiddenList.indexOf(time);
+            if(index > -1) hiddenList.splice(index, 1);
+            bookedList.push(time);
         } else {
-            // Block slot (manual/phone)
-            bookedTimes[dateKey].push(time);
+            // Currently Booked -> Make it Active (green)
+            const index = bookedList.indexOf(time);
+            if(index > -1) bookedList.splice(index, 1);
         }
 
+        localStorage.setItem('barbarfan_custom_slots', JSON.stringify(customSlotsConfig));
         localStorage.setItem('barbarfan_booked_slots', JSON.stringify(bookedTimes));
         renderAdminSlots(dateKey);
     }
 
-    // Bookings List Logic
     function loadBookingsList() {
         const container = document.getElementById('adminBookingsList');
         const list = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
@@ -369,17 +395,16 @@
     }
 
     function clearAllBookings() {
-        if(confirm('آیا از پاک کردن کل نوبت‌های آنلاین و بسته‌شده اطمینان دارید؟')) {
+        if(confirm('آیا از پاک کردن سوابق رزروها اطمینان دارید؟')) {
             localStorage.removeItem('barbarfan_bookings');
             localStorage.removeItem('barbarfan_booked_slots');
             bookedTimes = {};
             loadBookingsList();
             renderAdminSlots(selectedAdminDay);
-            alert('تمام اطلاعات پاک شد.');
+            alert('اطلاعات پاک شد.');
         }
     }
 
-    // Check login state on load
     checkAuth();
 </script>
 </body>
