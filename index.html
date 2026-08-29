@@ -261,7 +261,6 @@
 </footer>
 
 <script>
-    // Load dynamic announcement if set by admin
     const savedAnnounce = localStorage.getItem('barbarfan_announcement');
     if(savedAnnounce) {
         document.getElementById('announcementBox').innerHTML = `<strong>اطلاعیه جدید:</strong> ${savedAnnounce}`;
@@ -279,7 +278,7 @@
     }
     if(slides.length > 0) setInterval(nextSlide, 5000);
 
-    // Booking Logic
+    // Dynamic Persian Calendar Generator
     const calendarGrid = document.getElementById('calendarGrid');
     const timeSlotContainer = document.getElementById('timeSlotContainer');
     const timeGrid = document.getElementById('timeGrid');
@@ -287,20 +286,35 @@
     let selectedDay = null;
     let selectedTime = null;
 
-    const days = [
-        { name: 'امروز', date: '۷ شهریور', raw: '2024-08-28' },
-        { name: 'فردا', date: '۸ شهریور', raw: '2024-08-29' },
-        { name: 'پس‌فردا', date: '۹ شهریور', raw: '2024-08-30' },
-        { name: 'چهارشنبه', date: '۱۰ شهریور', raw: '2024-08-31' }
-    ];
+    const persianMonths = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+    const weekDays = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"];
 
-    const availableTimes = {
-        '2024-08-28': ['10:00', '10:30', '11:00', '12:00', '14:00', '14:30'],
-        '2024-08-29': ['10:00', '11:00', '11:30', '13:00', '15:00', '15:30'],
-        '2024-08-30': ['10:00', '10:30', '11:00', '12:00', '14:00', '15:00'],
-        '2024-08-31': ['10:00', '11:00', '13:00', '14:00', '15:00', '15:30']
-    };
+    // Generate dynamic next 4 days using Intl.DateTimeFormat for Persian
+    function generateDays() {
+        let daysArray = [];
+        let today = new Date();
 
+        for (let i = 0; i < 4; i++) {
+            let d = new Date(today);
+            d.setDate(today.getDate() + i);
+
+            let pDayName = new Intl.DateTimeFormat('fa-IR', { weekday: 'long' }).format(d);
+            let pDayNum = new Intl.DateTimeFormat('fa-IR', { day: 'numeric' }).format(d);
+            let pMonthName = new Intl.DateTimeFormat('fa-IR', { month: 'long' }).format(d);
+            
+            let rawDate = d.toISOString().split('T')[0];
+            let labelName = (i === 0) ? 'امروز' : (i === 1) ? 'فردا' : pDayName;
+
+            daysArray.push({
+                name: labelName,
+                date: `${pDayNum} ${pMonthName}`,
+                raw: rawDate
+            });
+        }
+        return daysArray;
+    }
+
+    const days = generateDays();
     let bookedTimes = JSON.parse(localStorage.getItem('barbarfan_booked_slots') || '{}');
 
     function initCalendar() {
@@ -325,10 +339,10 @@
 
     function renderTimes(dateKey) {
         timeGrid.innerHTML = '';
-        const times = availableTimes[dateKey] || [];
+        const defaultTimes = ['10:00', '10:30', '11:00', '12:00', '14:00', '14:30', '15:00', '16:00'];
         const booked = bookedTimes[dateKey] || [];
 
-        times.forEach(time => {
+        defaultTimes.forEach(time => {
             const slot = document.createElement('div');
             slot.classList.add('time-slot');
             slot.innerText = time;
