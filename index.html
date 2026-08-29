@@ -203,7 +203,6 @@
 
 <div class="container">
 
-    <!-- Slider -->
     <div class="slider-container">
         <div class="slide active" style="background-image: url('image_3.png');"></div>
         <div class="slide" style="background-image: url('image_4.png');"></div>
@@ -213,12 +212,10 @@
         <div class="slide" style="background-image: url('image_8.png');"></div>
     </div>
 
-    <!-- Announcement -->
     <div class="announcement" id="announcementBox">
         <strong>اطلاعیه مهم:</strong> برای تایید نهایی نوبت، لطفاً بیعانه (۵۰,۰۰۰ تومان) را به کارت زیر واریز نمایید و ۴ رقم آخر شماره کارت خود را در فرم وارد کنید.
     </div>
 
-    <!-- Booking System -->
     <div class="booking-section">
         <h2 class="section-title">رزرو نوبت آنلاین</h2>
 
@@ -266,7 +263,6 @@
         document.getElementById('announcementBox').innerHTML = `<strong>اطلاعیه جدید:</strong> ${savedAnnounce}`;
     }
 
-    // Slider Logic
     let slides = document.querySelectorAll('.slide');
     let currentSlide = 0;
     function nextSlide() {
@@ -278,7 +274,6 @@
     }
     if(slides.length > 0) setInterval(nextSlide, 5000);
 
-    // Dynamic Persian Calendar Generator
     const calendarGrid = document.getElementById('calendarGrid');
     const timeSlotContainer = document.getElementById('timeSlotContainer');
     const timeGrid = document.getElementById('timeGrid');
@@ -286,36 +281,35 @@
     let selectedDay = null;
     let selectedTime = null;
 
-    const persianMonths = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
-    const weekDays = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"];
+    // Master slots from 10:00 to 23:00 every 30 minutes
+    function generateMasterTimes() {
+        let times = [];
+        for(let hour = 10; hour <= 22; hour++) {
+            times.push((hour < 10 ? '0' : '') + hour + ':00');
+            times.push((hour < 10 ? '0' : '') + hour + ':30');
+        }
+        times.push('23:00');
+        return times;
+    }
+    const masterTimes = generateMasterTimes();
 
-    // Generate dynamic next 4 days using Intl.DateTimeFormat for Persian
     function generateDays() {
         let daysArray = [];
         let today = new Date();
-
         for (let i = 0; i < 4; i++) {
             let d = new Date(today);
             d.setDate(today.getDate() + i);
-
             let pDayName = new Intl.DateTimeFormat('fa-IR', { weekday: 'long' }).format(d);
             let pDayNum = new Intl.DateTimeFormat('fa-IR', { day: 'numeric' }).format(d);
             let pMonthName = new Intl.DateTimeFormat('fa-IR', { month: 'long' }).format(d);
-            
             let rawDate = d.toISOString().split('T')[0];
             let labelName = (i === 0) ? 'امروز' : (i === 1) ? 'فردا' : pDayName;
-
-            daysArray.push({
-                name: labelName,
-                date: `${pDayNum} ${pMonthName}`,
-                raw: rawDate
-            });
+            daysArray.push({ name: labelName, date: `${pDayNum} ${pMonthName}`, raw: rawDate });
         }
         return daysArray;
     }
 
     const days = generateDays();
-    let bookedTimes = JSON.parse(localStorage.getItem('barbarfan_booked_slots') || '{}');
 
     function initCalendar() {
         calendarGrid.innerHTML = '';
@@ -339,15 +333,27 @@
 
     function renderTimes(dateKey) {
         timeGrid.innerHTML = '';
-        const defaultTimes = ['10:00', '10:30', '11:00', '12:00', '14:00', '14:30', '15:00', '16:00'];
-        const booked = bookedTimes[dateKey] || [];
+        
+        let bookedTimes = JSON.parse(localStorage.getItem('barbarfan_booked_slots') || '{}');
+        let customSlotsConfig = JSON.parse(localStorage.getItem('barbarfan_custom_slots') || '{}');
 
-        defaultTimes.forEach(time => {
+        let hiddenList = customSlotsConfig[dateKey] || [];
+        let bookedList = bookedTimes[dateKey] || [];
+
+        // Filter out slots that admin hid
+        let availableMasterTimes = masterTimes.filter(time => !hiddenList.includes(time));
+
+        if(availableMasterTimes.length === 0) {
+            timeGrid.innerHTML = '<p style="grid-column: span 4; text-align:center; color:#888;">ساعتی برای رزرو در این روز فعال نیست.</p>';
+            return;
+        }
+
+        availableMasterTimes.forEach(time => {
             const slot = document.createElement('div');
             slot.classList.add('time-slot');
             slot.innerText = time;
 
-            if (booked.includes(time)) {
+            if (bookedList.includes(time)) {
                 slot.classList.add('booked');
                 slot.innerText += ' (رزرو شده)';
             } else {
@@ -383,6 +389,7 @@
 
         alert(`نوبت شما با موفقیت ثبت شد. پس از بررسی واریزی، تایید نهایی انجام می‌شود.`);
         
+        let bookedTimes = JSON.parse(localStorage.getItem('barbarfan_booked_slots') || '{}');
         if(!bookedTimes[selectedDay]) bookedTimes[selectedDay] = [];
         bookedTimes[selectedDay].push(selectedTime);
         localStorage.setItem('barbarfan_booked_slots', JSON.stringify(bookedTimes));
