@@ -168,6 +168,27 @@
             margin: 0;
         }
 
+        .status-badge {
+            margin-top: 10px;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            font-size: 0.85rem;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
         .logout-btn {
             background-color: var(--danger-color);
             width: auto;
@@ -222,7 +243,7 @@
     </div>
 
     <div class="section">
-        <h3>۳. لیست نوبت‌های ثبت‌شده آنلاین (با قابلیت تایید/رد)</h3>
+        <h3>۳. لیست نوبت‌های ثبت‌شده آنلاین</h3>
         <div id="adminBookingsList">
             <p style="text-align:center; color:#888;">هنوز رزروی ثبت نشده است.</p>
         </div>
@@ -393,20 +414,31 @@
 
         container.innerHTML = '';
         list.forEach((item, index) => {
-            // Convert raw date (YYYY-MM-DD) to Persian formatted string if possible
             let foundDay = days.find(d => d.raw === item.date);
             let displayDate = foundDay ? foundDay.formatted : item.date;
 
             const card = document.createElement('div');
             card.classList.add('booking-item');
+
+            let actionHtml = '';
+            if (item.status === 'approved') {
+                actionHtml = `<div class="status-badge status-approved">✓ این نوبت تایید و قفل شده است</div>`;
+            } else if (item.status === 'rejected') {
+                actionHtml = `<div class="status-badge status-rejected">✕ این نوبت رد شده است</div>`;
+            } else {
+                actionHtml = `
+                    <div class="booking-actions">
+                        <button class="approve-btn" onclick="approveBooking(${index})">تایید و قفل نوبت</button>
+                        <button class="reject-btn" onclick="rejectBooking(${index})">رد و آزاد کردن</button>
+                    </div>
+                `;
+            }
+
             card.innerHTML = `
                 <strong>نام مشتری:</strong> ${item.name} | <strong>تلفن:</strong> ${item.phone}<br>
                 <strong>تاریخ و ساعت:</strong> ${displayDate} ساعت ${item.time}<br>
                 <strong>۴ رقم کارت بیعانه:</strong> <span style="color:red; font-weight:bold;">${item.lastFour}</span><br>
-                <div class="booking-actions">
-                    <button class="approve-btn" onclick="approveBooking(${index})">تایید و قفل نوبت</button>
-                    <button class="reject-btn" onclick="rejectBooking(${index})">رد و آزاد کردن</button>
-                </div>
+                ${actionHtml}
             `;
             container.appendChild(card);
         });
@@ -423,7 +455,10 @@
             localStorage.setItem('barbarfan_booked_slots', JSON.stringify(bookedTimes));
         }
 
-        alert(`نوبت ${booking.name} برای ساعت ${booking.time} تایید و به صورت خودکار روی سایت بسته (رزرو) شد.`);
+        // Update status in storage
+        list[index].status = 'approved';
+        localStorage.setItem('barbarfan_bookings', JSON.stringify(list));
+
         loadBookingsList();
         renderAdminSlots(selectedAdminDay);
     }
@@ -439,11 +474,10 @@
                 localStorage.setItem('barbarfan_booked_slots', JSON.stringify(bookedTimes));
             }
 
-            // Remove from bookings list
-            list.splice(index, 1);
+            // Update status to rejected instead of removing completely
+            list[index].status = 'rejected';
             localStorage.setItem('barbarfan_bookings', JSON.stringify(list));
 
-            alert('نوبت رد شد و ساعت آن مجدداً آزاد گردید.');
             loadBookingsList();
             renderAdminSlots(selectedAdminDay);
         }
