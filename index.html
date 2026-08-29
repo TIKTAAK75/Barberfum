@@ -264,7 +264,7 @@
     // Load dynamic announcement if set by admin
     const savedAnnounce = localStorage.getItem('barbarfan_announcement');
     if(savedAnnounce) {
-        document.getElementById('announcementBox.innerHTML = `<strong>اطلاعیه جدید:</strong> ${savedAnnounce}`;
+        document.getElementById('announcementBox').innerHTML = `<strong>اطلاعیه جدید:</strong> ${savedAnnounce}`;
     }
 
     // Slider Logic
@@ -367,13 +367,12 @@
             return;
         }
 
-        alert(`نوبت شما با موفقیت برای تاریخ ثبت شد. پس از بررسی واریزی، تایید نهایی انجام می‌شود.`);
+        alert(`نوبت شما با موفقیت ثبت شد. پس از بررسی واریزی، تایید نهایی انجام می‌شود.`);
         
         if(!bookedTimes[selectedDay]) bookedTimes[selectedDay] = [];
         bookedTimes[selectedDay].push(selectedTime);
         localStorage.setItem('barbarfan_booked_slots', JSON.stringify(bookedTimes));
 
-        // Save booking for admin panel
         let allBookings = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
         allBookings.push({ name: fullName, phone: phone, date: selectedDay, time: selectedTime, lastFour: lastFour });
         localStorage.setItem('barbarfan_bookings', JSON.stringify(allBookings));
