@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پیرایش باربرفان - سپاهان‌شهر</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #f1c40f;
+            --accent-color: #e67e22;
+            --bg-color: #ecf0f1;
+            --text-color: #333;
+            --font-family: 'Tahoma', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Slider */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        /* Announcement */
+        .announcement {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Booking Section */
+        .booking-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* Important for padding */
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .day-card {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .day-card.selected {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .time-slot {
+            background-color: #e2e6ea;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .time-slot.available {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .time-slot.booked {
+            background-color: #dc3545;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .payment-info {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            border: 1px solid #c8e6c9;
+        }
+
+        .submit-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 30px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>پیرایش باربرفان</h1>
+    <p>سپاهان‌شهر، اصفهان</p>
+</header>
+
+<div class="container">
+
+    <div class="slider-container">
+        <div class="slide active" style="background-image: url('image_3.png');"></div>
+        <div class="slide" style="background-image: url('image_4.png');"></div>
+        <div class="slide" style="background-image: url('image_5.png');"></div>
+        <div class="slide" style="background-image: url('image_6.png');"></div>
+        <div class="slide" style="background-image: url('image_7.png');"></div>
+        <div class="slide" style="background-image: url('image_8.png');"></div>
+    </div>
+
+    <div class="announcement">
+        <strong>اطلاعیه مهم:</strong> برای تایید نهایی نوبت، لطفاً بیعانه (۵۰,۰۰۰ تومان) را به کارت زیر واریز نمایید و ۴ رقم آخر شماره کارت خود را در فرم وارد کنید.
+    </div>
+
+    <div class="booking-section">
+        <h2 class="section-title">رزرو نوبت آنلاین</h2>
+
+        <div class="form-group">
+            <label for="fullName">نام و نام خانوادگی</label>
+            <input type="text" id="fullName" placeholder="مثال: علی احمدی">
+        </div>
+
+        <div class="form-group">
+            <label for="phoneNumber">شماره موبایل</label>
+            <input type="tel" id="phoneNumber" placeholder="مثال: ۰۹۱۳۱۲۳۴۵۶۷">
+        </div>
+
+        <div class="form-group">
+            <label>۱. انتخاب روز (نهایتاً ۴ روز آینده)</label>
+            <div class="calendar-grid" id="calendarGrid">
+                </div>
+        </div>
+
+        <div class="form-group" id="timeSlotContainer" style="display:none;">
+            <label>۲. انتخاب ساعت</label>
+            <div class="time-grid" id="timeGrid">
+                </div>
+        </div>
+
+        <div class="payment-info" id="paymentInfo" style="display:none;">
+            <label>۳. پرداخت بیعانه</label>
+            <p>شماره کارت: ۶۱۰۴-۳۳۷۸-۱۲۳۴-۵۶۷۸ (به نام علی محمدی)</p>
+            <div class="form-group">
+                <label for="lastFourDigits">۴ رقم آخر کارت واریزی خود را وارد کنید:</label>
+                <input type="text" id="lastFourDigits" placeholder="مثال: ۸۹۱۲" maxlength="4">
+            </div>
+        </div>
+
+        <button class="submit-btn" onclick="submitBooking()">ثبت نوبت</button>
+    </div>
+
+</div>
+
+<footer>
+    طراحی و توسعه توسط تیم فنی باربرفان
+</footer>
+
+<script>
+    // --- Slider Logic ---
+    let slides = document.querySelectorAll('.slide');
+    let currentSlide = 0;
+
+    function nextSlide() {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }
+    setInterval(nextSlide, 5000); // Change slide every 5 seconds
+
+
+    // --- Booking Logic (Simplified) ---
+    const calendarGrid = document.getElementById('calendarGrid');
+    const timeSlotContainer = document.getElementById('timeSlotContainer');
+    const timeGrid = document.getElementById('timeGrid');
+    const paymentInfo = document.getElementById('paymentInfo');
+    let selectedDay = null;
+    let selectedTime = null;
+
+    // Persian Date Helpers (Mock data for demonstration)
+    const days = [
+        { name: 'امروز', date: '۷ شهریور', raw: '2024-08-28' }, // Example date
+        { name: 'فردا', date: '۸ شهریور', raw: '2024-08-29' },
+        { name: 'پس‌فردا', date: '۹ شهریور', raw: '2024-08-30' },
+        { name: 'چهارشنبه', date: '۱۰ شهریور', raw: '2024-08-31' }
+    ];
+
+    // Mock available times (This would come from admin panel)
+    const availableTimes = {
+        '2024-08-28': ['10:00', '10:30', '11:00', '12:00', '14:00', '14:30'],
+        '2024-08-29': ['10:00', '11:00', '11:30', '13:00', '15:00', '15:30'],
+        '2024-08-30': ['10:00', '10:30', '11:00', '12:00', '14:00', '15:00'],
+        '2024-08-31': ['10:00', '11:00', '13:00', '14:00', '15:00', '15:30']
+    };
+
+    // Mock booked times (This would be stored in a JSON file or simple DB)
+    let bookedTimes = {}; // e.g., {'2024-08-28': ['10:00']}
+
+    function initCalendar() {
+        days.forEach((day, index) => {
+            const card = document.createElement('div');
+            card.classList.add('day-card');
+            card.innerHTML = `<strong>${day.name}</strong><br>${day.date}`;
+            card.onclick = () => selectDayHandler(day, card);
+            calendarGrid.appendChild(card);
+    function selectDayHandler(day, element) {
+        // Remove selection from all cards
+        document.querySelectorAll('.day-card').forEach(c => c.classList.remove('selected'));
+        element.classList.add('selected');
+        
+        selectedDay = day.raw;
+        timeSlotContainer.style.display = 'block';
+        paymentInfo.style.display = 'block';
+        
+        renderTimes(selectedDay);
+    }
+
+    function renderTimes(dateKey) {
+        timeGrid.innerHTML = '';
+        const times = availableTimes[dateKey] || [];
+        const booked = bookedTimes[dateKey] || [];
+
+        times.forEach(time => {
+            const slot = document.createElement('div');
+            slot.classList.add('time-slot');
+            slot.innerText = time;
+
+            if (booked.includes(time)) {
+                slot.classList.add('booked');
+                slot.innerText += ' (رزرو شده)';
+            } else {
+                slot.classList.add('available');
+                slot.onclick = () => selectTimeHandler(time, slot);
+            }
+            timeGrid.appendChild(slot);
+        });
+    }
+
+    function selectTimeHandler(time, element) {
+        document.querySelectorAll('.time-slot').forEach(s => {
+            if(!s.classList.contains('booked')) s.style.backgroundColor = '#28a745';
+        });
+        element.style.backgroundColor = '#007bff'; // Highlight selected
+        selectedTime = time;
+    }
+
+    function submitBooking() {
+        const fullName = document.getElementById('fullName').value;
+        const phone = document.getElementById('phoneNumber').value;
+        const lastFour = document.getElementById('lastFourDigits').value;
+
+        if(!fullName || !phone || !selectedDay || !selectedTime || !lastFour) {
+            alert('لطفاً تمام فیلدها، روز، ساعت و ۴ رقم آخر کارت را وارد کنید.');
+            return;
+        }
+
+        if(lastFour.length !== 4) {
+            alert('۴ رقم آخر کارت باید دقیقاً ۴ رقم باشد.');
+            return;
+        }
+
+        alert(`نوبت شما با موفقیت برای تاریخ ${selectedDay} ساعت ${selectedTime} ثبت شد. پس از بررسی واریزی، پیامک تایید ارسال خواهد شد.`);
+        
+        // Lock the time slot locally for test
+        if(!bookedTimes[selectedDay]) bookedTimes[selectedDay] = [];
+        bookedTimes[selectedDay].push(selectedTime);
+        
+        renderTimes(selectedDay);
+    }
+
+    // Initialize calendar on load
+    initCalendar();
+</script>
+</body>
+</html>

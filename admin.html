@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل مدیریت - پیرایش باربرفان</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #f1c40f;
+            --accent-color: #e67e22;
+            --bg-color: #ecf0f1;
+            --text-color: #333;
+            --font-family: 'Tahoma', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #34495e;
+        }
+
+        .booking-list {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .booking-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>پنل مدیریت باربرفان</h1>
+
+    <div class="section">
+        <h3>تنظیم اطلاعیه جدید روی سایت</h3>
+        <textarea id="announcementText" rows="3" placeholder="متن اطلاعیه جدید را اینجا وارد کنید..."></textarea>
+        <button onclick="saveAnnouncement()">ذخیره اطلاعیه</button>
+    </div>
+
+    <div class="section">
+        <h3>مدیریت و مشاهده نوبت‌های رزرو شده</h3>
+        <p style="font-size: 0.85rem; color: #666;">لیست مشتریانی که نوبت خود را ثبت کرده و بیعانه واریز کرده‌اند:</p>
+        <div class="booking-list" id="adminBookingList">
+            <div class="booking-item">هنوز نوبتی ثبت نشده است.</div>
+        </div>
+    </div>
+
+    <a href="index.html" class="back-link">← بازگشت به صفحه اصلی سایت</a>
+</div>
+
+<script>
+    function saveAnnouncement() {
+        const text = document.getElementById('announcementText').value;
+        if(!text) {
+            alert('لطفاً متن اطلاعیه را وارد کنید.');
+            return;
+        }
+        localStorage.setItem('barbarfan_announcement', text);
+        alert('اطلاعیه با موفقیت روی سایت آپدیت شد!');
+    }
+
+    // Load bookings from localStorage (simulated backend for test on Vercel)
+    window.onload = function() {
+        const listContainer = document.getElementById('adminBookingList');
+        const savedBookings = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
+
+        if(savedBookings.length > 0) {
+            listContainer.innerHTML = '';
+            savedBookings.forEach(b => {
+                const item = document.createElement('div');
+                item.classList.add('booking-item');
+                item.innerHTML = `<strong>${b.name}</strong> (${b.phone}) - تاریخ: ${b.date} ساعت: ${b.time} - کد بیعانه: ${b.lastFour}`;
+                listContainer.appendChild(item);
+            });
+        }
+    }
+</script>
+
+</body>
+</html>
