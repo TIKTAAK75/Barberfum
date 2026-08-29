@@ -9,53 +9,61 @@
             --primary-color: #2c3e50;
             --secondary-color: #f1c40f;
             --accent-color: #e67e22;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
             --bg-color: #ecf0f1;
-            --text-color: #333;
             --font-family: 'Tahoma', sans-serif;
         }
 
         body {
             font-family: var(--font-family);
             background-color: var(--bg-color);
-            color: var(--text-color);
             margin: 0;
             padding: 20px;
         }
 
         .container {
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto;
             background: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        h1 {
+        h1, h2, h3 {
             color: var(--primary-color);
             text-align: center;
-            font-size: 1.5rem;
-            border-bottom: 2px solid var(--secondary-color);
-            padding-bottom: 10px;
         }
 
-        .section {
-            margin-bottom: 25px;
+        /* Login Box */
+        .login-card {
+            max-width: 350px;
+            margin: 50px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: right;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-weight: bold;
         }
 
-        input, textarea, select {
+        input[type="text"], input[type="password"], textarea, select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box;
-            margin-bottom: 10px;
         }
 
         button {
@@ -67,86 +75,312 @@
             border-radius: 5px;
             font-size: 1rem;
             cursor: pointer;
+            margin-top: 10px;
         }
 
         button:hover {
-            background-color: #34495e;
+            opacity: 0.9;
         }
 
-        .booking-list {
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 5px;
+        .section {
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+            margin-top: 25px;
+        }
+
+        /* Slots Management Grid */
+        .days-select {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .day-btn {
+            background: #f0f0f0;
             border: 1px solid #ddd;
+            padding: 10px 5px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .day-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
             margin-top: 10px;
-            max-height: 200px;
-            overflow-y: auto;
+        }
+
+        .slot-btn {
+            padding: 10px 5px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            color: white;
+        }
+
+        .slot-btn.available {
+            background-color: var(--success-color);
+        }
+
+        .slot-btn.booked {
+            background-color: var(--danger-color);
         }
 
         .booking-item {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            border-right: 4px solid var(--primary-color);
+            margin-bottom: 10px;
             font-size: 0.9rem;
         }
 
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: var(--accent-color);
-            text-decoration: none;
+        .logout-btn {
+            background-color: var(--danger-color);
+            width: auto;
+            float: left;
+            padding: 5px 15px;
+            font-size: 0.85rem;
+        }
+
+        .header-admin {
+            overflow: hidden;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>پنل مدیریت باربرفان</h1>
+<!-- Login Section -->
+<div id="loginSection" class="login-card">
+    <h2>ورود به پنل ادمین</h2>
+    <p style="font-size: 0.85rem; color: #666;">پیرایش باربرفان</p>
+    <div class="form-group">
+        <label>نام کاربری</label>
+        <input type="text" id="usernameInput" placeholder="admin">
+    </div>
+    <div class="form-group">
+        <label>رمز عبور</label>
+        <input type="password" id="passwordInput" placeholder="******">
+    </div>
+    <button onclick="handleLogin()">ورود</button>
+</div>
 
-    <div class="section">
-        <h3>تنظیم اطلاعیه جدید روی سایت</h3>
-        <textarea id="announcementText" rows="3" placeholder="متن اطلاعیه جدید را اینجا وارد کنید..."></textarea>
-        <button onclick="saveAnnouncement()">ذخیره اطلاعیه</button>
+<!-- Admin Dashboard Section -->
+<div id="dashboardSection" class="container" style="display: none;">
+    <div class="header-admin">
+        <button class="logout-btn" onclick="handleLogout()">خروج</button>
+        <h2 style="margin: 0; text-align: right;">پنل مدیریت پیرایش باربرفان</h2>
     </div>
 
+    <!-- Announcement Section -->
     <div class="section">
-        <h3>مدیریت و مشاهده نوبت‌های رزرو شده</h3>
-        <p style="font-size: 0.85rem; color: #666;">لیست مشتریانی که نوبت خود را ثبت کرده و بیعانه واریز کرده‌اند:</p>
-        <div class="booking-list" id="adminBookingList">
-            <div class="booking-item">هنوز نوبتی ثبت نشده است.</div>
+        <h3>۱. تنظیم اطلاعیه روی سایت</h3>
+        <textarea id="announcementText" rows="2" placeholder="متن اطلاعیه جدید..."></textarea>
+        <button onclick="saveAnnouncement()" style="background-color: var(--accent-color);">ذخیره اطلاعیه</button>
+    </div>
+
+    <!-- Manual Slots Management Section -->
+    <div class="section">
+        <h3>۲. مدیریت نوبت‌ها (رزرو تلفنی / تکمیل ظرفیت)</h3>
+        <p style="font-size: 0.85rem; color: #666;">
+            روز مورد نظر را انتخاب کنید و روی هر ساعتی که می‌خواهید <b>ببندید (تلفنی پر شده)</b> یا <b>باز کنید</b> کلیک کنید:
+        </p>
+        
+        <div class="days-select" id="adminDaysGrid"></div>
+        <div class="slots-grid" id="adminSlotsGrid"></div>
+    </div>
+
+    <!-- Online Bookings List Section -->
+    <div class="section">
+        <h3>۳. لیست آخرین نوبت‌های ثبت‌شده آنلاین</h3>
+        <div id="adminBookingsList">
+            <p style="text-align:center; color:#888;">هنوز رزروی ثبت نشده است.</p>
         </div>
+        <button onclick="clearAllBookings()" style="background-color: var(--danger-color); margin-top:15px;">پاک کردن کل لیست نوبت‌ها</button>
     </div>
 
-    <a href="index.html" class="back-link">← بازگشت به صفحه اصلی سایت</a>
+    <p style="text-align: center; margin-top: 25px;">
+        <a href="index.html" target="_blank" style="color: var(--primary-color);">مشاهده صفحه اصلی سایت ←</a>
+    </p>
 </div>
 
 <script>
+    // Default Credentials
+    const ADMIN_USER = "admin";
+    const ADMIN_PASS = "123456";
+
+    let selectedAdminDay = null;
+    let bookedTimes = JSON.parse(localStorage.getItem('barbarfan_booked_slots') || '{}');
+
+    // Dynamic 4 Days
+    function generateDays() {
+        let daysArray = [];
+        let today = new Date();
+        for (let i = 0; i < 4; i++) {
+            let d = new Date(today);
+            d.setDate(today.getDate() + i);
+            let pDayName = new Intl.DateTimeFormat('fa-IR', { weekday: 'long' }).format(d);
+            let pDayNum = new Intl.DateTimeFormat('fa-IR', { day: 'numeric' }).format(d);
+            let pMonthName = new Intl.DateTimeFormat('fa-IR', { month: 'long' }).format(d);
+            let rawDate = d.toISOString().split('T')[0];
+            let labelName = (i === 0) ? 'امروز' : (i === 1) ? 'فردا' : pDayName;
+            daysArray.push({ name: labelName, date: `${pDayNum} ${pMonthName}`, raw: rawDate });
+        }
+        return daysArray;
+    }
+
+    const days = generateDays();
+
+    // Authentication
+    function handleLogin() {
+        const user = document.getElementById('usernameInput').value;
+        const pass = document.getElementById('passwordInput').value;
+
+        if(user === ADMIN_USER && pass === ADMIN_PASS) {
+            sessionStorage.setItem('barbarfan_admin_logged_in', 'true');
+            showDashboard();
+        } else {
+            alert('نام کاربری یا رمز عبور اشتباه است!');
+        }
+    }
+
+    function handleLogout() {
+        sessionStorage.removeItem('barbarfan_admin_logged_in');
+        location.reload();
+    }
+
+    function checkAuth() {
+        if(sessionStorage.getItem('barbarfan_admin_logged_in') === 'true') {
+            showDashboard();
+        }
+    }
+
+    function showDashboard() {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('dashboardSection').style.display = 'block';
+        initAdminCalendar();
+        loadBookingsList();
+    }
+
+    // Announcement Logic
     function saveAnnouncement() {
         const text = document.getElementById('announcementText').value;
-        if(!text) {
-            alert('لطفاً متن اطلاعیه را وارد کنید.');
+        if(!text) return alert('لطفاً متنی وارد کنید.');
+        localStorage.setItem('barbarfan_announcement', text);
+        alert('اطلاعیه با موفقیت در سایت آپدیت شد!');
+    }
+
+    // Slots Management
+    function initAdminCalendar() {
+        const daysGrid = document.getElementById('adminDaysGrid');
+        daysGrid.innerHTML = '';
+        days.forEach((day, index) => {
+            const btn = document.createElement('div');
+            btn.classList.add('day-btn');
+            if(index === 0) {
+                btn.classList.add('active');
+                selectedAdminDay = day.raw;
+            }
+            btn.innerHTML = `<strong>${day.name}</strong><br>${day.date}`;
+            btn.onclick = () => {
+                document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedAdminDay = day.raw;
+                renderAdminSlots(selectedAdminDay);
+            };
+            daysGrid.appendChild(btn);
+        });
+        renderAdminSlots(selectedAdminDay);
+    }
+
+    function renderAdminSlots(dateKey) {
+        const slotsGrid = document.getElementById('adminSlotsGrid');
+        slotsGrid.innerHTML = '';
+        const defaultTimes = ['10:00', '10:30', '11:00', '12:00', '14:00', '14:30', '15:00', '16:00'];
+        const currentBooked = bookedTimes[dateKey] || [];
+
+        defaultTimes.forEach(time => {
+            const btn = document.createElement('button');
+            btn.classList.add('slot-btn');
+            
+            if(currentBooked.includes(time)) {
+                btn.classList.add('booked');
+                btn.innerText = `${time} (تکمیل/پر)`;
+            } else {
+                btn.classList.add('available');
+                btn.innerText = `${time} (آزاد)`;
+            }
+
+            btn.onclick = () => toggleSlotStatus(dateKey, time);
+            slotsGrid.appendChild(btn);
+        });
+    }
+
+    function toggleSlotStatus(dateKey, time) {
+        if(!bookedTimes[dateKey]) bookedTimes[dateKey] = [];
+
+        const index = bookedTimes[dateKey].indexOf(time);
+        if(index > -1) {
+            // Unblock slot
+            bookedTimes[dateKey].splice(index, 1);
+        } else {
+            // Block slot (manual/phone)
+            bookedTimes[dateKey].push(time);
+        }
+
+        localStorage.setItem('barbarfan_booked_slots', JSON.stringify(bookedTimes));
+        renderAdminSlots(dateKey);
+    }
+
+    // Bookings List Logic
+    function loadBookingsList() {
+        const container = document.getElementById('adminBookingsList');
+        const list = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
+
+        if(list.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#888;">هنوز هیچ نوبتی آنلاین ثبت نشده است.</p>';
             return;
         }
-        localStorage.setItem('barbarfan_announcement', text);
-        alert('اطلاعیه با موفقیت روی سایت آپدیت شد!');
+
+        container.innerHTML = '';
+        list.forEach(item => {
+            const card = document.createElement('div');
+            card.classList.add('booking-item');
+            card.innerHTML = `
+                <strong>نام مشتری:</strong> ${item.name} | <strong>تلفن:</strong> ${item.phone}<br>
+                <strong>تاریخ و ساعت:</strong> ${item.date} ساعت ${item.time}<br>
+                <strong>۴ رقم کارت بیعانه:</strong> <span style="color:red; font-weight:bold;">${item.lastFour}</span>
+            `;
+            container.appendChild(card);
+        });
     }
 
-    // Load bookings from localStorage (simulated backend for test on Vercel)
-    window.onload = function() {
-        const listContainer = document.getElementById('adminBookingList');
-        const savedBookings = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
-
-        if(savedBookings.length > 0) {
-            listContainer.innerHTML = '';
-            savedBookings.forEach(b => {
-                const item = document.createElement('div');
-                item.classList.add('booking-item');
-                item.innerHTML = `<strong>${b.name}</strong> (${b.phone}) - تاریخ: ${b.date} ساعت: ${b.time} - کد بیعانه: ${b.lastFour}`;
-                listContainer.appendChild(item);
-            });
+    function clearAllBookings() {
+        if(confirm('آیا از پاک کردن کل نوبت‌های آنلاین و بسته‌شده اطمینان دارید؟')) {
+            localStorage.removeItem('barbarfan_bookings');
+            localStorage.removeItem('barbarfan_booked_slots');
+            bookedTimes = {};
+            loadBookingsList();
+            renderAdminSlots(selectedAdminDay);
+            alert('تمام اطلاعات پاک شد.');
         }
     }
-</script>
 
+    // Check login state on load
+    checkAuth();
+</script>
 </body>
 </html>
