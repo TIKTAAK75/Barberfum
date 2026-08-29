@@ -127,25 +127,45 @@
         }
 
         .slot-btn.active-slot {
-            background-color: var(--success-color); /* روی سایت هست */
+            background-color: var(--success-color);
         }
 
         .slot-btn.hidden-slot {
-            background-color: #6c757d; /* از روی سایت برداشته شده / غیرفعال */
+            background-color: #6c757d;
             text-decoration: line-through;
         }
 
         .slot-btn.booked-slot {
-            background-color: var(--danger-color); /* رزرو شده (آنلاین یا تلفنی) */
+            background-color: var(--danger-color);
         }
 
         .booking-item {
             background: #f9f9f9;
-            padding: 10px;
+            padding: 12px;
             border-radius: 5px;
             border-right: 4px solid var(--primary-color);
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             font-size: 0.9rem;
+        }
+
+        .booking-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .approve-btn {
+            background-color: var(--success-color);
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .reject-btn {
+            background-color: var(--danger-color);
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            margin: 0;
         }
 
         .logout-btn {
@@ -193,24 +213,20 @@
     </div>
 
     <div class="section">
-        <h3>۲. مدیریت و تعیین ساعت‌های نوبت‌دهی (حذف/نمایش یا رزرو تلفنی)</h3>
+        <h3>۲. مدیریت و تعیین ساعت‌های نوبت‌دهی</h3>
         <p style="font-size: 0.85rem; color: #666;">
-            روز مورد نظر را انتخاب کنید. روی هر ساعت کلیک کنید تا وضعیت آن تغییر کند:<br>
-            <span style="color:var(--success-color); font-weight:bold;">■ سبز:</span> فعال روی سایت | 
-            <span style="color:#6c757d; font-weight:bold;">■ خاکستری:</span> مخفی شده (نشان داده نمی‌شود) | 
-            <span style="color:var(--danger-color); font-weight:bold;">■ قرمز:</span> تکمیل ظرفیت / رزرو شده
+            روز مورد نظر را انتخاب کنید و وضعیت ساعت‌ها را تغییر دهید:
         </p>
-        
         <div class="days-select" id="adminDaysGrid"></div>
         <div class="slots-grid" id="adminSlotsGrid"></div>
     </div>
 
     <div class="section">
-        <h3>۳. لیست نوبت‌های ثبت‌شده آنلاین</h3>
+        <h3>۳. لیست نوبت‌های ثبت‌شده آنلاین (با قابلیت تایید/رد)</h3>
         <div id="adminBookingsList">
             <p style="text-align:center; color:#888;">هنوز رزروی ثبت نشده است.</p>
         </div>
-        <button onclick="clearAllBookings()" style="background-color: var(--danger-color); margin-top:15px;">پاک کردن اطلاعات رزروها</button>
+        <button onclick="clearAllBookings()" style="background-color: var(--danger-color); margin-top:15px;">پاک کردن کلیه سوابق</button>
     </div>
 
     <p style="text-align: center; margin-top: 25px;">
@@ -226,14 +242,13 @@
     let customSlotsConfig = JSON.parse(localStorage.getItem('barbarfan_custom_slots') || '{}');
     let bookedTimes = JSON.parse(localStorage.getItem('barbarfan_booked_slots') || '{}');
 
-    // Default master slots from 10:00 to 23:00 every 30 minutes
     function generateMasterTimes() {
         let times = [];
         for(let hour = 10; hour <= 22; hour++) {
             times.push((hour < 10 ? '0' : '') + hour + ':00');
             times.push((hour < 10 ? '0' : '') + hour + ':30');
         }
-        times.push('23:00'); // final slot
+        times.push('23:00');
         return times;
     }
     const masterTimes = generateMasterTimes();
@@ -249,7 +264,7 @@
             let pMonthName = new Intl.DateTimeFormat('fa-IR', { month: 'long' }).format(d);
             let rawDate = d.toISOString().split('T')[0];
             let labelName = (i === 0) ? 'امروز' : (i === 1) ? 'فردا' : pDayName;
-            daysArray.push({ name: labelName, date: `${pDayNum} ${pMonthName}`, raw: rawDate });
+            daysArray.push({ name: labelName, date: `${pDayNum} ${pMonthName}`, raw: rawDate, formatted: `${pDayName}، ${pDayNum} ${pMonthName}` });
         }
         return daysArray;
     }
@@ -318,8 +333,7 @@
         const slotsGrid = document.getElementById('adminSlotsGrid');
         slotsGrid.innerHTML = '';
         
-        // Get hidden slots and booked slots for this day
-        let hiddenList = customSlotsConfig[dateKey] || []; // default empty (all visible)
+        let hiddenList = customSlotsConfig[dateKey] || [];
         let currentBooked = bookedTimes[dateKey] || [];
 
         masterTimes.forEach(time => {
@@ -342,7 +356,6 @@
         });
     }
 
-    // Cycle through states: Active -> Hidden -> Booked -> Active
     function cycleSlotStatus(dateKey, time) {
         if(!customSlotsConfig[dateKey]) customSlotsConfig[dateKey] = [];
         if(!bookedTimes[dateKey]) bookedTimes[dateKey] = [];
@@ -354,15 +367,12 @@
         let isHidden = hiddenList.includes(time);
 
         if(!isHidden && !isBooked) {
-            // Currently Active -> Make it Hidden (remove from site)
             hiddenList.push(time);
         } else if(isHidden && !isBooked) {
-            // Currently Hidden -> Make it Booked/Phone reserved (red)
             const index = hiddenList.indexOf(time);
             if(index > -1) hiddenList.splice(index, 1);
             bookedList.push(time);
         } else {
-            // Currently Booked -> Make it Active (green)
             const index = bookedList.indexOf(time);
             if(index > -1) bookedList.splice(index, 1);
         }
@@ -374,7 +384,7 @@
 
     function loadBookingsList() {
         const container = document.getElementById('adminBookingsList');
-        const list = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
+        let list = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
 
         if(list.length === 0) {
             container.innerHTML = '<p style="text-align:center; color:#888;">هنوز هیچ نوبتی آنلاین ثبت نشده است.</p>';
@@ -382,20 +392,65 @@
         }
 
         container.innerHTML = '';
-        list.forEach(item => {
+        list.forEach((item, index) => {
+            // Convert raw date (YYYY-MM-DD) to Persian formatted string if possible
+            let foundDay = days.find(d => d.raw === item.date);
+            let displayDate = foundDay ? foundDay.formatted : item.date;
+
             const card = document.createElement('div');
             card.classList.add('booking-item');
             card.innerHTML = `
                 <strong>نام مشتری:</strong> ${item.name} | <strong>تلفن:</strong> ${item.phone}<br>
-                <strong>تاریخ و ساعت:</strong> ${item.date} ساعت ${item.time}<br>
-                <strong>۴ رقم کارت بیعانه:</strong> <span style="color:red; font-weight:bold;">${item.lastFour}</span>
+                <strong>تاریخ و ساعت:</strong> ${displayDate} ساعت ${item.time}<br>
+                <strong>۴ رقم کارت بیعانه:</strong> <span style="color:red; font-weight:bold;">${item.lastFour}</span><br>
+                <div class="booking-actions">
+                    <button class="approve-btn" onclick="approveBooking(${index})">تایید و قفل نوبت</button>
+                    <button class="reject-btn" onclick="rejectBooking(${index})">رد و آزاد کردن</button>
+                </div>
             `;
             container.appendChild(card);
         });
     }
 
+    function approveBooking(index) {
+        let list = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
+        let booking = list[index];
+
+        // Automatically lock the slot in bookedTimes so it becomes red on the site
+        if(!bookedTimes[booking.date]) bookedTimes[booking.date] = [];
+        if(!bookedTimes[booking.date].includes(booking.time)) {
+            bookedTimes[booking.date].push(booking.time);
+            localStorage.setItem('barbarfan_booked_slots', JSON.stringify(bookedTimes));
+        }
+
+        alert(`نوبت ${booking.name} برای ساعت ${booking.time} تایید و به صورت خودکار روی سایت بسته (رزرو) شد.`);
+        loadBookingsList();
+        renderAdminSlots(selectedAdminDay);
+    }
+
+    function rejectBooking(index) {
+        if(confirm('آیا از رد این نوبت اطمینان دارید؟ (ساعت مربوطه آزاد خواهد شد)')) {
+            let list = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
+            let booking = list[index];
+
+            // Free up the slot if it was booked
+            if(bookedTimes[booking.date]) {
+                bookedTimes[booking.date] = bookedTimes[booking.date].filter(t => t !== booking.time);
+                localStorage.setItem('barbarfan_booked_slots', JSON.stringify(bookedTimes));
+            }
+
+            // Remove from bookings list
+            list.splice(index, 1);
+            localStorage.setItem('barbarfan_bookings', JSON.stringify(list));
+
+            alert('نوبت رد شد و ساعت آن مجدداً آزاد گردید.');
+            loadBookingsList();
+            renderAdminSlots(selectedAdminDay);
+        }
+    }
+
     function clearAllBookings() {
-        if(confirm('آیا از پاک کردن سوابق رزروها اطمینان دارید؟')) {
+        if(confirm('آیا از پاک کردن کل سوابق اطمینان دارید؟')) {
             localStorage.removeItem('barbarfan_bookings');
             localStorage.removeItem('barbarfan_booked_slots');
             bookedTimes = {};
