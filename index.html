@@ -28,7 +28,6 @@
             padding: 20px;
         }
 
-        /* Header */
         header {
             background-color: var(--primary-color);
             color: white;
@@ -50,7 +49,6 @@
             opacity: 0.8;
         }
 
-        /* Slider */
         .slider-container {
             position: relative;
             width: 100%;
@@ -59,6 +57,7 @@
             margin-bottom: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            background-color: #ddd;
         }
 
         .slide {
@@ -75,7 +74,6 @@
             opacity: 1;
         }
 
-        /* Announcement */
         .announcement {
             background-color: #fff3cd;
             border: 1px solid #ffeeba;
@@ -86,7 +84,6 @@
             font-size: 0.9rem;
         }
 
-        /* Booking Section */
         .booking-section {
             background-color: white;
             padding: 20px;
@@ -117,12 +114,12 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            box-sizing: border-box; /* Important for padding */
+            box-sizing: border-box;
         }
 
         .calendar-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
         }
 
@@ -133,6 +130,7 @@
             padding: 10px;
             text-align: center;
             cursor: pointer;
+            font-size: 0.85rem;
         }
 
         .day-card.selected {
@@ -153,6 +151,7 @@
             padding: 10px;
             text-align: center;
             cursor: pointer;
+            font-size: 0.9rem;
         }
 
         .time-slot.available {
@@ -186,7 +185,6 @@
             margin-top: 20px;
         }
 
-        /* Footer */
         footer {
             text-align: center;
             font-size: 0.8rem;
@@ -205,6 +203,7 @@
 
 <div class="container">
 
+    <!-- Slider -->
     <div class="slider-container">
         <div class="slide active" style="background-image: url('image_3.png');"></div>
         <div class="slide" style="background-image: url('image_4.png');"></div>
@@ -214,10 +213,12 @@
         <div class="slide" style="background-image: url('image_8.png');"></div>
     </div>
 
-    <div class="announcement">
+    <!-- Announcement -->
+    <div class="announcement" id="announcementBox">
         <strong>اطلاعیه مهم:</strong> برای تایید نهایی نوبت، لطفاً بیعانه (۵۰,۰۰۰ تومان) را به کارت زیر واریز نمایید و ۴ رقم آخر شماره کارت خود را در فرم وارد کنید.
     </div>
 
+    <!-- Booking System -->
     <div class="booking-section">
         <h2 class="section-title">رزرو نوبت آنلاین</h2>
 
@@ -233,14 +234,12 @@
 
         <div class="form-group">
             <label>۱. انتخاب روز (نهایتاً ۴ روز آینده)</label>
-            <div class="calendar-grid" id="calendarGrid">
-                </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
         </div>
 
         <div class="form-group" id="timeSlotContainer" style="display:none;">
             <label>۲. انتخاب ساعت</label>
-            <div class="time-grid" id="timeGrid">
-                </div>
+            <div class="time-grid" id="timeGrid"></div>
         </div>
 
         <div class="payment-info" id="paymentInfo" style="display:none;">
@@ -262,19 +261,25 @@
 </footer>
 
 <script>
-    // --- Slider Logic ---
+    // Load dynamic announcement if set by admin
+    const savedAnnounce = localStorage.getItem('barbarfan_announcement');
+    if(savedAnnounce) {
+        document.getElementById('announcementBox.innerHTML = `<strong>اطلاعیه جدید:</strong> ${savedAnnounce}`;
+    }
+
+    // Slider Logic
     let slides = document.querySelectorAll('.slide');
     let currentSlide = 0;
-
     function nextSlide() {
-        slides[currentSlide].classList.remove('active');
-        currentSlide = (currentSlide + 1) % slides.length;
-        slides[currentSlide].classList.add('active');
+        if(slides.length > 0) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
     }
-    setInterval(nextSlide, 5000); // Change slide every 5 seconds
+    if(slides.length > 0) setInterval(nextSlide, 5000);
 
-
-    // --- Booking Logic (Simplified) ---
+    // Booking Logic
     const calendarGrid = document.getElementById('calendarGrid');
     const timeSlotContainer = document.getElementById('timeSlotContainer');
     const timeGrid = document.getElementById('timeGrid');
@@ -282,15 +287,13 @@
     let selectedDay = null;
     let selectedTime = null;
 
-    // Persian Date Helpers (Mock data for demonstration)
     const days = [
-        { name: 'امروز', date: '۷ شهریور', raw: '2024-08-28' }, // Example date
+        { name: 'امروز', date: '۷ شهریور', raw: '2024-08-28' },
         { name: 'فردا', date: '۸ شهریور', raw: '2024-08-29' },
         { name: 'پس‌فردا', date: '۹ شهریور', raw: '2024-08-30' },
         { name: 'چهارشنبه', date: '۱۰ شهریور', raw: '2024-08-31' }
     ];
 
-    // Mock available times (This would come from admin panel)
     const availableTimes = {
         '2024-08-28': ['10:00', '10:30', '11:00', '12:00', '14:00', '14:30'],
         '2024-08-29': ['10:00', '11:00', '11:30', '13:00', '15:00', '15:30'],
@@ -298,25 +301,25 @@
         '2024-08-31': ['10:00', '11:00', '13:00', '14:00', '15:00', '15:30']
     };
 
-    // Mock booked times (This would be stored in a JSON file or simple DB)
-    let bookedTimes = {}; // e.g., {'2024-08-28': ['10:00']}
+    let bookedTimes = JSON.parse(localStorage.getItem('barbarfan_booked_slots') || '{}');
 
     function initCalendar() {
-        days.forEach((day, index) => {
+        calendarGrid.innerHTML = '';
+        days.forEach((day) => {
             const card = document.createElement('div');
             card.classList.add('day-card');
             card.innerHTML = `<strong>${day.name}</strong><br>${day.date}`;
             card.onclick = () => selectDayHandler(day, card);
             calendarGrid.appendChild(card);
+        });
+    }
+
     function selectDayHandler(day, element) {
-        // Remove selection from all cards
         document.querySelectorAll('.day-card').forEach(c => c.classList.remove('selected'));
         element.classList.add('selected');
-        
         selectedDay = day.raw;
         timeSlotContainer.style.display = 'block';
         paymentInfo.style.display = 'block';
-        
         renderTimes(selectedDay);
     }
 
@@ -345,7 +348,7 @@
         document.querySelectorAll('.time-slot').forEach(s => {
             if(!s.classList.contains('booked')) s.style.backgroundColor = '#28a745';
         });
-        element.style.backgroundColor = '#007bff'; // Highlight selected
+        element.style.backgroundColor = '#007bff';
         selectedTime = time;
     }
 
@@ -364,16 +367,20 @@
             return;
         }
 
-        alert(`نوبت شما با موفقیت برای تاریخ ${selectedDay} ساعت ${selectedTime} ثبت شد. پس از بررسی واریزی، پیامک تایید ارسال خواهد شد.`);
+        alert(`نوبت شما با موفقیت برای تاریخ ثبت شد. پس از بررسی واریزی، تایید نهایی انجام می‌شود.`);
         
-        // Lock the time slot locally for test
         if(!bookedTimes[selectedDay]) bookedTimes[selectedDay] = [];
         bookedTimes[selectedDay].push(selectedTime);
-        
-        renderTimes(selectedDay);
+        localStorage.setItem('barbarfan_booked_slots', JSON.stringify(bookedTimes));
+
+        // Save booking for admin panel
+        let allBookings = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
+        allBookings.push({ name: fullName, phone: phone, date: selectedDay, time: selectedTime, lastFour: lastFour });
+        localStorage.setItem('barbarfan_bookings', JSON.stringify(allBookings));
+
+        location.reload();
     }
 
-    // Initialize calendar on load
     initCalendar();
 </script>
 </body>
