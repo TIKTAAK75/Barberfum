@@ -57,7 +57,7 @@
             font-weight: bold;
         }
 
-        input[type="text"], input[type="password"], textarea {
+        input[type="text"], input[type="password"], textarea, input[type="file"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -148,26 +148,6 @@
             font-size: 0.9rem;
         }
 
-        .booking-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .approve-btn {
-            background-color: var(--success-color);
-            padding: 6px 12px;
-            font-size: 0.85rem;
-            margin: 0;
-        }
-
-        .reject-btn {
-            background-color: var(--danger-color);
-            padding: 6px 12px;
-            font-size: 0.85rem;
-            margin: 0;
-        }
-
         .status-badge {
             margin-top: 10px;
             padding: 6px 12px;
@@ -187,6 +167,28 @@
             background-color: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
+        }
+
+        .image-manager-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .image-thumb-card {
+            background: #f1f1f1;
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .image-thumb-card img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 5px;
         }
 
         .logout-btn {
@@ -228,22 +230,26 @@
     </div>
 
     <div class="section">
-        <h3>۱. تنظیم اطلاعیه روی سایت</h3>
+        <h3>۱. مدیریت عکس‌های اسلایدر صفحه اصلی</h3>
+        <p style="font-size: 0.85rem; color: #666;">یک عکس از گالری گوشی خود انتخاب کنید تا به اسلایدر سایت اضافه شود:</p>
+        <input type="file" id="imageUploadInput" accept="image/*" onchange="uploadNewImage(event)">
+        <div class="image-manager-grid" id="adminImageManagerGrid"></div>
+    </div>
+
+    <div class="section">
+        <h3>۲. تنظیم اطلاعیه روی سایت</h3>
         <textarea id="announcementText" rows="2" placeholder="متن اطلاعیه جدید..."></textarea>
         <button onclick="saveAnnouncement()" style="background-color: var(--accent-color);">ذخیره اطلاعیه</button>
     </div>
 
     <div class="section">
-        <h3>۲. مدیریت و تعیین ساعت‌های نوبت‌دهی</h3>
-        <p style="font-size: 0.85rem; color: #666;">
-            روز مورد نظر را انتخاب کنید و وضعیت ساعت‌ها را تغییر دهید:
-        </p>
+        <h3>۳. مدیریت و تعیین ساعت‌های نوبت‌دهی</h3>
         <div class="days-select" id="adminDaysGrid"></div>
         <div class="slots-grid" id="adminSlotsGrid"></div>
     </div>
 
     <div class="section">
-        <h3>۳. لیست نوبت‌های ثبت‌شده آنلاین</h3>
+        <h3>۴. لیست نوبت‌های ثبت‌شده آنلاین</h3>
         <div id="adminBookingsList">
             <p style="text-align:center; color:#888;">هنوز رزروی ثبت نشده است.</p>
         </div>
@@ -319,6 +325,60 @@
         document.getElementById('dashboardSection').style.display = 'block';
         initAdminCalendar();
         loadBookingsList();
+        renderAdminImageManager();
+    }
+
+    // مدیریت آپلود و حذف عکس‌ها در پنل ادمین
+    function getStoredImages() {
+        let defaultImages = ['image_3.png', 'image_4.png', 'image_5.png', 'image_6.png', 'image_7.png', 'image_8.png'];
+        return JSON.parse(localStorage.getItem('barbarfan_slider_images') || JSON.stringify(defaultImages));
+    }
+
+    function renderAdminImageManager() {
+        const grid = document.getElementById('adminImageManagerGrid');
+        let images = getStoredImages();
+        grid.innerHTML = '';
+
+        images.forEach((imgSrc, index) => {
+            const card = document.createElement('div');
+            card.classList.add('image-thumb-card');
+            card.innerHTML = `
+                <img src="${imgSrc}" alt="اسلایدر">
+                <button onclick="removeImage(${index})" style="background-color: var(--danger-color); padding: 5px; font-size: 0.75rem; margin-top:5px;">حذف</button>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function uploadNewImage(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            let base64Image = e.target.result;
+            let images = getStoredImages();
+            images.push(base64Image);
+            localStorage.setItem('barbarfan_slider_images', JSON.stringify(images));
+            renderAdminImageManager();
+            alert('عکس با موفقیت به اسلایدر سایت اضافه شد!');
+            document.getElementById('imageUploadInput').value = '';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeImage(index) {
+        let images = getStoredImages();
+        if(images.length <= 1) {
+            alert('حداقل یک عکس باید در اسلایدر باقی بماند.');
+            return;
+        }
+        if(confirm('آیا از حذف این عکس اطمینان دارید؟')) {
+            images.splice(index, 1);
+            localStorage.setItem('barbarfan_slider_images', JSON.stringify(images));
+            renderAdminImageManager();
+            alert('عکس حذف شد.');
+        }
     }
 
     function saveAnnouncement() {
@@ -427,15 +487,16 @@
                 actionHtml = `<div class="status-badge status-rejected">✕ این نوبت رد شده است</div>`;
             } else {
                 actionHtml = `
-                    <div class="booking-actions">
-                        <button class="approve-btn" onclick="approveBooking(${index})">تایید و قفل نوبت</button>
-                        <button class="reject-btn" onclick="rejectBooking(${index})">رد و آزاد کردن</button>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button style="background-color:var(--success-color); padding:6px; margin:0;" onclick="approveBooking(${index})">تایید و قفل نوبت</button>
+                        <button style="background-color:var(--danger-color); padding:6px; margin:0;" onclick="rejectBooking(${index})">رد و آزاد کردن</button>
                     </div>
                 `;
             }
 
             card.innerHTML = `
                 <strong>نام مشتری:</strong> ${item.name} | <strong>تلفن:</strong> ${item.phone}<br>
+                <strong>نوع خدمات:</strong> <span style="color:var(--accent-color);">${item.type}</span><br>
                 <strong>تاریخ و ساعت:</strong> ${displayDate} ساعت ${item.time}<br>
                 <strong>۴ رقم کارت بیعانه:</strong> <span style="color:red; font-weight:bold;">${item.lastFour}</span><br>
                 ${actionHtml}
@@ -448,14 +509,12 @@
         let list = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
         let booking = list[index];
 
-        // Automatically lock the slot in bookedTimes so it becomes red on the site
         if(!bookedTimes[booking.date]) bookedTimes[booking.date] = [];
         if(!bookedTimes[booking.date].includes(booking.time)) {
             bookedTimes[booking.date].push(booking.time);
             localStorage.setItem('barbarfan_booked_slots', JSON.stringify(bookedTimes));
         }
 
-        // Update status in storage
         list[index].status = 'approved';
         localStorage.setItem('barbarfan_bookings', JSON.stringify(list));
 
@@ -468,13 +527,11 @@
             let list = JSON.parse(localStorage.getItem('barbarfan_bookings') || '[]');
             let booking = list[index];
 
-            // Free up the slot if it was booked
             if(bookedTimes[booking.date]) {
                 bookedTimes[booking.date] = bookedTimes[booking.date].filter(t => t !== booking.time);
                 localStorage.setItem('barbarfan_booked_slots', JSON.stringify(bookedTimes));
             }
 
-            // Update status to rejected instead of removing completely
             list[index].status = 'rejected';
             localStorage.setItem('barbarfan_bookings', JSON.stringify(list));
 
