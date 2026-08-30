@@ -49,15 +49,19 @@
             opacity: 0.8;
         }
 
+        /* استایل جدید و بهینه برای نمایش کامل عکس‌های عمودی */
         .slider-container {
             position: relative;
             width: 100%;
-            height: 250px;
+            height: 420px;
             overflow: hidden;
             margin-bottom: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            background-color: #ddd;
+            background-color: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .slide {
@@ -66,7 +70,8 @@
             height: 100%;
             opacity: 0;
             transition: opacity 1s ease-in-out;
-            background-size: cover;
+            background-size: contain;
+            background-repeat: no-repeat;
             background-position: center;
         }
 
@@ -220,13 +225,9 @@
 
 <div class="container">
 
-    <div class="slider-container">
-        <div class="slide active" style="background-image: url('image_3.png');"></div>
-        <div class="slide" style="background-image: url('image_4.png');"></div>
-        <div class="slide" style="background-image: url('image_5.png');"></div>
-        <div class="slide" style="background-image: url('image_6.png');"></div>
-        <div class="slide" style="background-image: url('image_7.png');"></div>
-        <div class="slide" style="background-image: url('image_8.png');"></div>
+    <!-- اسلایدر عکس‌ها -->
+    <div class="slider-container" id="sliderContainer">
+        <!-- عکس‌ها به صورت پویا از ادمین بارگذاری می‌شوند -->
     </div>
 
     <div class="announcement" id="announcementBox">
@@ -237,7 +238,7 @@
         <h2 class="section-title">رزرو نوبت آنلاین</h2>
 
         <div class="form-group">
-            <label>نوع خدمات (سایز نوبت)</label>
+            <label>نوع خدمات</label>
             <div class="type-selector">
                 <label><input type="radio" name="customerType" value="adult" checked onchange="onTypeChange()"> بزرگسال (۱ ساعت)</label>
                 <label><input type="radio" name="customerType" value="child" onchange="onTypeChange()"> کودک و خردسال (نیم ساعت)</label>
@@ -284,21 +285,37 @@
 </footer>
 
 <script>
+    // مدیریت اسلایدر و عکس‌های پویا
+    function initSlider() {
+        const sliderContainer = document.getElementById('sliderContainer');
+        let defaultImages = ['image_3.png', 'image_4.png', 'image_5.png', 'image_6.png', 'image_7.png', 'image_8.png'];
+        let customImages = JSON.parse(localStorage.getItem('barbarfan_slider_images') || JSON.stringify(defaultImages));
+
+        sliderContainer.innerHTML = '';
+        customImages.forEach((imgSrc, index) => {
+            let slideDiv = document.createElement('div');
+            slideDiv.classList.add('slide');
+            if(index === 0) slideDiv.classList.add('active');
+            slideDiv.style.backgroundImage = `url('${imgSrc}')`;
+            sliderContainer.appendChild(slideDiv);
+        });
+
+        let slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+        if(slides.length > 1) {
+            setInterval(() => {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }, 5000);
+        }
+    }
+    initSlider();
+
     const savedAnnounce = localStorage.getItem('barbarfan_announcement');
     if(savedAnnounce) {
         document.getElementById('announcementBox').innerHTML = `<strong>اطلاعیه جدید:</strong> ${savedAnnounce}`;
     }
-
-    let slides = document.querySelectorAll('.slide');
-    let currentSlide = 0;
-    function nextSlide() {
-        if(slides.length > 0) {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }
-    }
-    if(slides.length > 0) setInterval(nextSlide, 5000);
 
     const calendarGrid = document.getElementById('calendarGrid');
     const timeSlotContainer = document.getElementById('timeSlotContainer');
@@ -349,15 +366,6 @@
         });
     }
 
-    function selectDayHandler(day, element) {
-        document.querySelectorAll('.day-card').forEach(c => c.classList.remove('selected'));
-        element.classList.add('selected');
-        selectedDay = day.raw;
-        timeSlotContainer.style.display = 'block';
-        paymentInfo.style.display = 'block';
-        renderTimes(selectedDay);
-    }
-
     function getSelectedType() {
         return document.querySelector('input[name="customerType"]:checked').value;
     }
@@ -397,14 +405,11 @@
             slot.classList.add('time-slot');
             slot.innerText = time;
 
-            // Check availability based on type
             let isOccupied = bookedList.includes(time);
             
-            // If adult, it needs current slot AND the next slot to be free
             if(type === 'adult') {
                 let nextIndex = index + 1;
                 let nextTime = availableMasterTimes[nextIndex];
-                // If there's no next time or the next time is not consecutive / is booked / is hidden
                 if(!nextTime || bookedList.includes(nextTime)) {
                     isOccupied = true;
                 }
@@ -431,7 +436,6 @@
         selectedTime = time;
 
         if(type === 'adult') {
-            // Also highlight the next slot visually to show 1-hour block
             let nextSlotElement = timeGrid.children[index + 1];
             if(nextSlotElement && !nextSlotElement.classList.contains('booked')) {
                 nextSlotElement.style.backgroundColor = '#007bff';
@@ -458,17 +462,14 @@
         let bookedTimes = JSON.parse(localStorage.getItem('barbarfan_booked_slots') || '{}');
         if(!bookedTimes[selectedDay]) bookedTimes[selectedDay] = [];
 
-        // Determine slots to lock
         let slotsToLock = [selectedTime];
         if(type === 'adult') {
-            // Find index of selectedTime in masterTimes to get the exact next master slot
             let masterIdx = masterTimes.indexOf(selectedTime);
             if(masterIdx !== -1 && masterIdx + 1 < masterTimes.length) {
                 slotsToLock.push(masterTimes[masterIdx + 1]);
             }
         }
 
-        // Lock slots
         slotsToLock.forEach(t => {
             if(!bookedTimes[selectedDay].includes(t)) {
                 bookedTimes[selectedDay].push(t);
